@@ -2,11 +2,12 @@
 MySample.main = (function() {
     'use strict';
 
-    let backgroundColor = {r: 0, g: 0, b: 0};
+    //let backgroundColor = {r: 0, g: 0, b: 0};
+    let backgroundColor = {r: .3, g: 0, b: .3};
 
     let previousTime = 0;
     let currAngl = (Math.PI) / 4;
-    let zTrans = -2;
+    let zTrans = -1.6;
 
     let canvas = document.getElementById('canvas-main');
     let gl = canvas.getContext('webgl2');
@@ -22,10 +23,6 @@ MySample.main = (function() {
     let indices;
     let normals;
 
-    let vertices1;
-    let indices1;
-    let normals1;
-
     let vertexBuffer;
     let indexBuffer;
     let normalBuffer;
@@ -35,8 +32,9 @@ MySample.main = (function() {
     let color0 = [.9, .2, .6];
     let color1 = [.1, .85, .3];
     let color2 = [.3, .1, .9];
+    let color3 = [1.0, .84, 0];
 
-    let objColor = [.8, .8, .8];
+    let objColor = [.8, .2, .8];
 
     let model = "models/bunny-low.ply";
     //let model = "models/dragon_vrip.ply";
@@ -106,22 +104,14 @@ MySample.main = (function() {
         let light1;
         let light2;
 
-        if (slot <= (numSlots / 4)) {
-            light0 = color0;
-            light1 = [0, 0, 0];
-            light2 = [0, 0, 0];
-        } else if (slot <= (numSlots / 4) * 2) {
-            light0 = [0, 0, 0];
-            light1 = color1;
-            light2 = [0, 0, 0];
-        } else if (slot <= (numSlots / 4) * 3) {
-            light0 = [0, 0, 0];
-            light1 = [0, 0, 0];
-            light2 = color2;
+        light0 = color0;
+
+        let specLight;
+
+        if (slot <= (numSlots / 3)) {
+            specLight = [0,0,0];
         } else {
-            light0 = color0;
-            light1 = color1;
-            light2 = color2;
+            specLight = color3;
         }
 
         let uViewMatrix = getViewMat();
@@ -141,42 +131,30 @@ MySample.main = (function() {
         gl.uniform3fv(location, uLightEmission);
 
         let uLightPos = [
-            -1,
-            0,
-            0
-        ];
-        location = gl.getUniformLocation(shaderProgram, 'uLightPos');
-        gl.uniform3fv(location, uLightPos);
-
-        let uLightEmission1 = light1;
-        location = gl.getUniformLocation(shaderProgram, 'uLightEmission1');
-        gl.uniform3fv(location, uLightEmission1);
-
-        let uLightPos1 = [
-            1,
-            0,
-            0
-        ];
-        location = gl.getUniformLocation(shaderProgram, 'uLightPos1');
-        gl.uniform3fv(location, uLightPos1);
-
-        let uLightEmission2 = light2;
-        location = gl.getUniformLocation(shaderProgram, 'uLightEmission2');
-        gl.uniform3fv(location, uLightEmission2);
-
-        let uLightPos2 = [
             0,
             4,
             2
         ];
-        location = gl.getUniformLocation(shaderProgram, 'uLightPos2');
-        gl.uniform3fv(location, uLightPos2);
+        location = gl.getUniformLocation(shaderProgram, 'uLightPos');
+        gl.uniform3fv(location, uLightPos);
 
-        let uAmbientLight = [
-            .2,
-            .2,
-            .2
+        let uSpecLight = specLight;
+        location = gl.getUniformLocation(shaderProgram, 'uSpecLight');
+        gl.uniform3fv(location, uSpecLight);
+
+        let uSpecPos = [
+            1,
+            1,
+            5
         ];
+        location = gl.getUniformLocation(shaderProgram, 'uSpecPos');
+        gl.uniform3fv(location, uSpecPos);
+
+        let shiny = [3];
+        location = gl.getUniformLocation(shaderProgram, 'shiny');
+        gl.uniform1fv(location, shiny);
+
+        let uAmbientLight = [.03, .01, .09];
         location = gl.getUniformLocation(shaderProgram, 'uAmbientLight');
         gl.uniform3fv(location, uAmbientLight);
     }
