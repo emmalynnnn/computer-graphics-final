@@ -37,7 +37,24 @@ MySample.main = (function() {
     let objColor = [.8, .2, .8];
 
     let model = "models/bunny-low.ply";
+    model = "assets/bunny.ply";
     //let model = "models/dragon_vrip.ply";
+
+
+    let cubeMap = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_CUBE_MAP, cubeMap);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, "assets/crimson-tide_rt.jpg");
+    gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, "assets/crimson-tide_lf.jpg");
+    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, "assets/crimson-tide_up.jpg");
+    gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, "assets/crimson-tide_dn.jpg");
+    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, "assets/crimson-tide_ft.jpg");
+    gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, "assets/crimson-tide_bk.jpg");
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
 
     readPly(model)
         .then(plyData => {
@@ -76,7 +93,6 @@ MySample.main = (function() {
 
             requestAnimationFrame(animationLoop);
         });
-
 
     function setUpBuffer(geometry) {
         let buffer = gl.createBuffer();
@@ -166,11 +182,15 @@ MySample.main = (function() {
     //------------------------------------------------------------------
     function render() {
 
-        gl.clearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b,1.0);
+        //gl.clearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0);
         gl.clearDepth(1.0);
         gl.depthFunc(gl.LEQUAL);
         gl.enable(gl.DEPTH_TEST);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, cubeMap);
+        gl.uniform1i(uSampler, 0);
 
         let uModelMatrix = getModelMat(currAngl, zTrans, 0);
         let location = gl.getUniformLocation(shaderProgram, 'uModel');

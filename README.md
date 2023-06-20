@@ -7,8 +7,6 @@ Emma Lynn
 
 * Try to fix ply file reader maybe?
 * Do the required parts
-  * Switch to per fragment lighting
-  * Specular
   * Demo
 * Extra credit
   * Skybox
