@@ -2,8 +2,7 @@
 MySample.main = (function() {
     'use strict';
 
-    //let backgroundColor = {r: 0, g: 0, b: 0};
-    let backgroundColor = {r: .3, g: 0, b: .3};
+    let backgroundColor = {r: 45/255, g: 10/255, b: 80/255};
 
     let previousTime = 0;
     let currAngl = (Math.PI) / 4;
@@ -23,9 +22,17 @@ MySample.main = (function() {
     let indices;
     let normals;
 
+    let vertices1;
+    let indices1;
+    let normals1;
+
     let vertexBuffer;
     let indexBuffer;
     let normalBuffer;
+
+    let vertexBuffer1;
+    let indexBuffer1;
+    let normalBuffer1;
 
     let slot = 1;
 
@@ -33,27 +40,13 @@ MySample.main = (function() {
     let color1 = [.1, .85, .3];
     let color2 = [.3, .1, .9];
     let color3 = [1.0, .84, 0];
+    let color4 = [.2, .2, .8];
+
 
     let objColor = [.8, .2, .8];
 
-    let model = "models/bunny-low.ply";
-    model = "assets/bunny.ply";
-    //let model = "models/dragon_vrip.ply";
-
-
-    let cubeMap = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_CUBE_MAP, cubeMap);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, "assets/crimson-tide_rt.jpg");
-    gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, "assets/crimson-tide_lf.jpg");
-    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, "assets/crimson-tide_up.jpg");
-    gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, "assets/crimson-tide_dn.jpg");
-    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, "assets/crimson-tide_ft.jpg");
-    gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, "assets/crimson-tide_bk.jpg");
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    let model = "models/bunny.ply";
+    let model1 = "models/dragon_vrip.ply";
 
 
     readPly(model)
@@ -68,6 +61,20 @@ MySample.main = (function() {
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
             normalBuffer = setUpBuffer(normals);
+
+            return readPly(model1)
+        })
+        .then(plyData => {
+            vertices1 = plyData.verts;
+            indices1 = plyData.indices;
+            normals1 = plyData.normals;
+
+            vertexBuffer1 = setUpBuffer(vertices1);
+            indexBuffer1 = gl.createBuffer();
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer1);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices1, gl.STATIC_DRAW);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+            normalBuffer1 = setUpBuffer(normals1);
 
             return loadFileFromServer('shaders/simple.vert')
         })
@@ -115,16 +122,10 @@ MySample.main = (function() {
         slot = Math.trunc(slot + (rotationRate * elapsedTime * 800));
         let numSlots = 1700;
         slot = slot % numSlots;
-
-        let light0;
-        let light1;
-        let light2;
-
-        light0 = color0;
-
+        
         let specLight;
 
-        if (slot <= (numSlots / 3)) {
+        if (slot <= (numSlots / 4)) {
             specLight = [0,0,0];
         } else {
             specLight = color3;
@@ -142,7 +143,7 @@ MySample.main = (function() {
         location = gl.getUniformLocation(shaderProgram, 'uObjMat');
         gl.uniform3fv(location, uObjMat);
 
-        let uLightEmission = light0;
+        let uLightEmission = color0;
         location = gl.getUniformLocation(shaderProgram, 'uLightEmission');
         gl.uniform3fv(location, uLightEmission);
 
@@ -161,7 +162,7 @@ MySample.main = (function() {
         let uSpecPos = [
             1,
             1,
-            5
+            6
         ];
         location = gl.getUniformLocation(shaderProgram, 'uSpecPos');
         gl.uniform3fv(location, uSpecPos);
@@ -182,17 +183,13 @@ MySample.main = (function() {
     //------------------------------------------------------------------
     function render() {
 
-        //gl.clearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0);
+        gl.clearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0);
         gl.clearDepth(1.0);
         gl.depthFunc(gl.LEQUAL);
         gl.enable(gl.DEPTH_TEST);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_CUBE_MAP, cubeMap);
-        gl.uniform1i(uSampler, 0);
-
-        let uModelMatrix = getModelMat(currAngl, zTrans, 0);
+        let uModelMatrix = getModelMat(currAngl, zTrans, -.6);
         let location = gl.getUniformLocation(shaderProgram, 'uModel');
         gl.uniformMatrix4fv(location, false, uModelMatrix);
 
@@ -208,6 +205,25 @@ MySample.main = (function() {
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
         gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_INT, 0);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+
+        let uModelMatrix1 = getModelMat(currAngl, zTrans, .6);
+        location = gl.getUniformLocation(shaderProgram, 'uModel');
+        gl.uniformMatrix4fv(location, false, uModelMatrix1);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer1);
+        norm = gl.getAttribLocation(shaderProgram, 'aNormal');
+        gl.enableVertexAttribArray(norm);
+        gl.vertexAttribPointer(norm, 3, gl.FLOAT, false, vertices.BYTES_PER_ELEMENT * 3, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer1);
+        position = gl.getAttribLocation(shaderProgram, 'aPosition');
+        gl.enableVertexAttribArray(position);
+        gl.vertexAttribPointer(position, 3, gl.FLOAT, false, vertices.BYTES_PER_ELEMENT * 3, 0);
+
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer1);
+        gl.drawElements(gl.TRIANGLES, indices1.length, gl.UNSIGNED_INT, 0);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
     }

@@ -1,7 +1,7 @@
 function getTransMat(ZTrans, XTrans) {
     let uTransMatrix = [
         1, 0, 0, XTrans, //x
-        0, 1, 0, 0, //y
+        0, 1, 0, -.5, //y
         0, 0, 1, ZTrans, //z
         0, 0, 0, 1
     ];

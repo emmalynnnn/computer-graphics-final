@@ -30,12 +30,9 @@ void main()
     vec3 L = normalize(uLightPos - vec3(position).xyz);
     vec3 diffuse = uObjMat * uLightEmission * dot(normal, L);
     //             k       * L              * dot(N     , L);
-    //vec3 diffuse1 = uObjMat * uLightEmission1 * dot(normal, (uLightPos1 - vec3(position).xyz));
-    //vec3 diffuse2 = uObjMat * uLightEmission2 * dot(normal, (uLightPos2 - vec3(position).xyz));
-    //vec4 theColor = vec4((ambient + diffuse + diffuse1 + diffuse2), 1);
 
-    vec3 R = (2.0 * dot(normal, L) * normal) - L;
     vec3 V = normalize(-1.0 * vec3(position).xyz);
+    vec3 R = (2.0 * dot(normal, L) * normal) - L;
     vec3 specular = uSpecLight * uSpecPos * pow(max(dot(V, R), 0.0), shiny);
     //              k          * L        *         dot(V, R)        ^n
 
